@@ -4,6 +4,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import java.time.Duration;
 
 @Entity
@@ -22,6 +25,7 @@ public class SupplierProfile {
     @Column
     private Double minOrder = 0.0;
 
+    @JdbcTypeCode(SqlTypes.INTERVAL_SECOND)
     @Column(columnDefinition = "interval")
     private Duration minTimePrepOrder = Duration.ofHours(1);
 
