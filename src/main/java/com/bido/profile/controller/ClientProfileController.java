@@ -4,9 +4,8 @@ import com.bido.profile.dto.ClientProfileDto;
 import com.bido.profile.security.AuthContext;
 import com.bido.profile.service.ClientProfileService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/client-profiles")
@@ -19,38 +18,53 @@ public class ClientProfileController {
     }
 
     @GetMapping
-    public List<ClientProfileDto> getAll(AuthContext auth) {
-        auth.requireAdmin();
-        return service.findAll();
-    }
-
-    @GetMapping("/{id}")
-    public ClientProfileDto getById(@PathVariable Long id, AuthContext auth) {
-        auth.requireAdminOrOwner(AuthContext.ROLE_CLIENT, id);
-        return service.findById(id);
+    public ResponseEntity<?> get(AuthContext auth) {
+        if (auth.isAdmin()) {
+            return ResponseEntity.ok(service.findAll());
+        }
+        if (!auth.isClient()) {
+            throw AuthContext.forbidden();
+        }
+        return ResponseEntity.ok(service.findById(auth.userId()));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ClientProfileDto create(@RequestBody ClientProfileDto dto, AuthContext auth) {
-        auth.requireAdminOrOwner(AuthContext.ROLE_CLIENT, dto.id());
-        return service.save(dto);
-    }
-
-    @PutMapping("/{id}")
-    public ClientProfileDto update(@PathVariable Long id, @RequestBody ClientProfileDto dto, AuthContext auth) {
-        auth.requireAdminOrOwner(AuthContext.ROLE_CLIENT, id);
-        ClientProfileDto updatedDto = new ClientProfileDto(
-            id, dto.firstName(), dto.lastName(), dto.phoneNumber(),
+        if (auth.isAdmin()) {
+            return service.save(dto);
+        }
+        if (!auth.isClient()) {
+            throw AuthContext.forbidden();
+        }
+        ClientProfileDto ownedDto = new ClientProfileDto(
+            auth.userId(), dto.firstName(), dto.lastName(), dto.phoneNumber(),
             dto.companyName(), dto.cui(), dto.billingAddress()
         );
-        return service.save(updatedDto);
+        return service.save(ownedDto);
     }
 
-    @DeleteMapping("/{id}")
+    @PutMapping
+    public ClientProfileDto update(@RequestBody ClientProfileDto dto, AuthContext auth) {
+        if (auth.isAdmin()) {
+            return service.save(dto);
+        }
+        if (!auth.isClient()) {
+            throw AuthContext.forbidden();
+        }
+        ClientProfileDto ownedDto = new ClientProfileDto(
+            auth.userId(), dto.firstName(), dto.lastName(), dto.phoneNumber(),
+            dto.companyName(), dto.cui(), dto.billingAddress()
+        );
+        return service.save(ownedDto);
+    }
+
+    @DeleteMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id, AuthContext auth) {
-        auth.requireAdminOrOwner(AuthContext.ROLE_CLIENT, id);
-        service.delete(id);
+    public void delete(AuthContext auth) {
+        if (!auth.isClient()) {
+            throw AuthContext.forbidden();
+        }
+        service.delete(auth.userId());
     }
 }

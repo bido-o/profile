@@ -9,27 +9,25 @@ public record AuthContext(Long userId, String role, String email) {
     public static final String ROLE_CLIENT = "CLIENT";
     public static final String ROLE_SUPPLIER = "SUPPLIER";
 
-    public void requireAdmin() {
-        if (!isAdmin()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
-    }
-
-    public void requireAdminOrOwner(String requiredRole, Long profileId) {
-        if (isAdmin()) {
-            return;
-        }
-        if (requiredRole.equals(role) && isOwner(profileId)) {
-            return;
-        }
-        throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-    }
-
-    private boolean isAdmin() {
+    public boolean isAdmin() {
         return ROLE_ADMIN.equals(role);
     }
 
-    private boolean isOwner(Long profileId) {
-        return userId != null && userId.equals(profileId);
+    public boolean isClient() {
+        return ROLE_CLIENT.equals(role);
+    }
+
+    public boolean isSupplier() {
+        return ROLE_SUPPLIER.equals(role);
+    }
+
+    public void requireAdmin() {
+        if (!isAdmin()) {
+            throw forbidden();
+        }
+    }
+
+    public static ResponseStatusException forbidden() {
+        return new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
 }
