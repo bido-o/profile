@@ -18,7 +18,7 @@ public class ClientProfile {
     @Column(nullable = false)
     private String lastName;
 
-    @Column(nullable = false)
+    @Column
     private String phoneNumber;
 
     @Column
