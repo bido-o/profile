@@ -2,6 +2,7 @@ package com.bido.profile.service;
 
 import com.bido.profile.dto.SupplierProfileDto;
 import com.bido.profile.entity.SupplierProfile;
+import com.bido.profile.exception.ProfileNotFoundException;
 import com.bido.profile.repository.SupplierProfileRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +26,7 @@ public class SupplierProfileService {
 
     public SupplierProfileDto findById(Long id) {
         return repository.findById(id).map(this::mapToDto)
-                .orElseThrow(() -> new RuntimeException("Supplier profile not found"));
+                .orElseThrow(() -> new ProfileNotFoundException("Supplier profile not found"));
     }
 
     public SupplierProfileDto save(SupplierProfileDto dto) {

@@ -2,6 +2,7 @@ package com.bido.profile.service;
 
 import com.bido.profile.dto.ClientProfileDto;
 import com.bido.profile.entity.ClientProfile;
+import com.bido.profile.exception.ProfileNotFoundException;
 import com.bido.profile.repository.ClientProfileRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +25,7 @@ public class ClientProfileService {
 
     public ClientProfileDto findById(Long id) {
         return repository.findById(id).map(this::mapToDto)
-                .orElseThrow(() -> new RuntimeException("Client profile not found"));
+                .orElseThrow(() -> new ProfileNotFoundException("Client profile not found"));
     }
 
     public ClientProfileDto save(ClientProfileDto dto) {
