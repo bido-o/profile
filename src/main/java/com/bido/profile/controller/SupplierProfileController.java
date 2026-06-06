@@ -3,11 +3,10 @@ package com.bido.profile.controller;
 import com.bido.profile.dto.SupplierProfileDto;
 import com.bido.profile.security.AuthContext;
 import com.bido.profile.service.SupplierProfileService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/supplier-profiles")
@@ -32,9 +31,9 @@ public class SupplierProfileController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public SupplierProfileDto create(@RequestBody SupplierProfileDto dto, AuthContext auth) {
+    public SupplierProfileDto create(@Valid @RequestBody SupplierProfileDto dto, AuthContext auth) {
         if (auth.isAdmin()) {
-            return service.save(dto);
+            return service.create(dto);
         }
         if (!auth.isSupplier()) {
             throw AuthContext.forbidden();
@@ -45,13 +44,13 @@ public class SupplierProfileController {
             dto.hasLegalInfo(), dto.totalOffersWon(), dto.totalDisputesLost(),
             dto.totalOffersSubmitted()
         );
-        return service.save(ownedDto);
+        return service.create(ownedDto);
     }
 
     @PutMapping
-    public SupplierProfileDto update(@RequestBody SupplierProfileDto dto, AuthContext auth) {
+    public SupplierProfileDto update(@Valid @RequestBody SupplierProfileDto dto, AuthContext auth) {
         if (auth.isAdmin()) {
-            return service.save(dto);
+            return service.update(dto);
         }
         if (!auth.isSupplier()) {
             throw AuthContext.forbidden();
@@ -62,7 +61,7 @@ public class SupplierProfileController {
             dto.hasLegalInfo(), dto.totalOffersWon(), dto.totalDisputesLost(),
             dto.totalOffersSubmitted()
         );
-        return service.save(ownedDto);
+        return service.update(ownedDto);
     }
 
     @DeleteMapping

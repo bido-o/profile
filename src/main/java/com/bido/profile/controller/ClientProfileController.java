@@ -3,6 +3,7 @@ package com.bido.profile.controller;
 import com.bido.profile.dto.ClientProfileDto;
 import com.bido.profile.security.AuthContext;
 import com.bido.profile.service.ClientProfileService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,9 +31,9 @@ public class ClientProfileController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ClientProfileDto create(@RequestBody ClientProfileDto dto, AuthContext auth) {
+    public ClientProfileDto create(@Valid @RequestBody ClientProfileDto dto, AuthContext auth) {
         if (auth.isAdmin()) {
-            return service.save(dto);
+            return service.create(dto);
         }
         if (!auth.isClient()) {
             throw AuthContext.forbidden();
@@ -41,13 +42,13 @@ public class ClientProfileController {
             auth.userId(), dto.firstName(), dto.lastName(), dto.phoneNumber(),
             dto.companyName(), dto.cui(), dto.billingAddress()
         );
-        return service.save(ownedDto);
+        return service.create(ownedDto);
     }
 
     @PutMapping
-    public ClientProfileDto update(@RequestBody ClientProfileDto dto, AuthContext auth) {
+    public ClientProfileDto update(@Valid @RequestBody ClientProfileDto dto, AuthContext auth) {
         if (auth.isAdmin()) {
-            return service.save(dto);
+            return service.update(dto);
         }
         if (!auth.isClient()) {
             throw AuthContext.forbidden();
@@ -56,7 +57,7 @@ public class ClientProfileController {
             auth.userId(), dto.firstName(), dto.lastName(), dto.phoneNumber(),
             dto.companyName(), dto.cui(), dto.billingAddress()
         );
-        return service.save(ownedDto);
+        return service.update(ownedDto);
     }
 
     @DeleteMapping

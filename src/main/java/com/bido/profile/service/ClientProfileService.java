@@ -2,6 +2,7 @@ package com.bido.profile.service;
 
 import com.bido.profile.dto.ClientProfileDto;
 import com.bido.profile.entity.ClientProfile;
+import com.bido.profile.exception.ProfileAlreadyExistsException;
 import com.bido.profile.exception.ProfileNotFoundException;
 import com.bido.profile.repository.ClientProfileRepository;
 import org.springframework.stereotype.Service;
@@ -28,9 +29,30 @@ public class ClientProfileService {
                 .orElseThrow(() -> new ProfileNotFoundException("Client profile not found"));
     }
 
-    public ClientProfileDto save(ClientProfileDto dto) {
-        ClientProfile entity = repository.findById(dto.id()).orElse(new ClientProfile());
-        
+    public ClientProfileDto create(ClientProfileDto dto) {
+        if (dto.id() != null && repository.existsById(dto.id())) {
+            throw new ProfileAlreadyExistsException("Client profile already exists");
+        }
+        return persist(dto);
+    }
+
+    public ClientProfileDto update(ClientProfileDto dto) {
+        if (!repository.existsById(dto.id())) {
+            throw new ProfileNotFoundException("Client profile not found");
+        }
+        return persist(dto);
+    }
+
+    public void delete(Long id) {
+        if (!repository.existsById(id)) {
+            throw new ProfileNotFoundException("Client profile not found");
+        }
+        repository.deleteById(id);
+    }
+
+    private ClientProfileDto persist(ClientProfileDto dto) {
+        ClientProfile entity = repository.findById(dto.id() != null ? dto.id() : -1L).orElse(new ClientProfile());
+
         entity.setId(dto.id());
         entity.setFirstName(dto.firstName());
         entity.setLastName(dto.lastName());
@@ -38,12 +60,8 @@ public class ClientProfileService {
         entity.setCompanyName(dto.companyName());
         entity.setCui(dto.cui());
         entity.setBillingAddress(dto.billingAddress());
-        
-        return mapToDto(repository.save(entity));
-    }
 
-    public void delete(Long id) {
-        repository.deleteById(id);
+        return mapToDto(repository.save(entity));
     }
 
     private ClientProfileDto mapToDto(ClientProfile entity) {
@@ -58,4 +76,3 @@ public class ClientProfileService {
         );
     }
 }
-

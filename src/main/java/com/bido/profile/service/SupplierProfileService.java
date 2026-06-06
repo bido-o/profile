@@ -2,6 +2,7 @@ package com.bido.profile.service;
 
 import com.bido.profile.dto.SupplierProfileDto;
 import com.bido.profile.entity.SupplierProfile;
+import com.bido.profile.exception.ProfileAlreadyExistsException;
 import com.bido.profile.exception.ProfileNotFoundException;
 import com.bido.profile.repository.SupplierProfileRepository;
 import org.springframework.stereotype.Service;
@@ -29,8 +30,29 @@ public class SupplierProfileService {
                 .orElseThrow(() -> new ProfileNotFoundException("Supplier profile not found"));
     }
 
-    public SupplierProfileDto save(SupplierProfileDto dto) {
-        SupplierProfile entity = repository.findById(dto.id()).orElse(new SupplierProfile());
+    public SupplierProfileDto create(SupplierProfileDto dto) {
+        if (dto.id() != null && repository.existsById(dto.id())) {
+            throw new ProfileAlreadyExistsException("Supplier profile already exists");
+        }
+        return persist(dto);
+    }
+
+    public SupplierProfileDto update(SupplierProfileDto dto) {
+        if (!repository.existsById(dto.id())) {
+            throw new ProfileNotFoundException("Supplier profile not found");
+        }
+        return persist(dto);
+    }
+
+    public void delete(Long id) {
+        if (!repository.existsById(id)) {
+            throw new ProfileNotFoundException("Supplier profile not found");
+        }
+        repository.deleteById(id);
+    }
+
+    private SupplierProfileDto persist(SupplierProfileDto dto) {
+        SupplierProfile entity = repository.findById(dto.id() != null ? dto.id() : -1L).orElse(new SupplierProfile());
 
         entity.setId(dto.id());
         entity.setCompanyName(dto.companyName());
@@ -45,10 +67,6 @@ public class SupplierProfileService {
         entity.setTotalOffersSubmitted(dto.totalOffersSubmitted() != null ? dto.totalOffersSubmitted() : 0);
 
         return mapToDto(repository.save(entity));
-    }
-
-    public void delete(Long id) {
-        repository.deleteById(id);
     }
 
     private SupplierProfileDto mapToDto(SupplierProfile entity) {

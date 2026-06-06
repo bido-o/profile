@@ -1,12 +1,13 @@
 package com.bido.profile.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 public record ClientProfileDto(
     Long id,
-    String firstName,
-    String lastName,
+    @NotBlank String firstName,
+    @NotBlank String lastName,
     String phoneNumber,
-    String companyName,
+    @NotBlank String companyName,
     String cui,
     String billingAddress
 ) {}
-

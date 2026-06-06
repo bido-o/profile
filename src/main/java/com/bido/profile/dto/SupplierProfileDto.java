@@ -1,10 +1,12 @@
 package com.bido.profile.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 import java.time.Duration;
 
 public record SupplierProfileDto(
     Long id,
-    String companyName,
+    @NotBlank String companyName,
     Integer creditBalance,
     Double minOrder,
     Duration minTimePrepOrder,
