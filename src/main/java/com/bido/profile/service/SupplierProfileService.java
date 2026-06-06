@@ -5,6 +5,8 @@ import com.bido.profile.entity.SupplierProfile;
 import com.bido.profile.exception.ProfileAlreadyExistsException;
 import com.bido.profile.exception.ProfileNotFoundException;
 import com.bido.profile.repository.SupplierProfileRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +17,8 @@ import java.util.List;
 @Transactional
 public class SupplierProfileService {
 
+    private static final Logger log = LoggerFactory.getLogger(SupplierProfileService.class);
+
     private final SupplierProfileRepository repository;
 
     public SupplierProfileService(SupplierProfileRepository repository) {
@@ -22,33 +26,46 @@ public class SupplierProfileService {
     }
 
     public List<SupplierProfileDto> findAll() {
-        return repository.findAll().stream().map(this::mapToDto).toList();
+        List<SupplierProfileDto> profiles = repository.findAll().stream().map(this::mapToDto).toList();
+        log.debug("Fetched {} supplier profiles", profiles.size());
+        return profiles;
     }
 
     public SupplierProfileDto findById(Long id) {
         return repository.findById(id).map(this::mapToDto)
-                .orElseThrow(() -> new ProfileNotFoundException("Supplier profile not found"));
+                .orElseThrow(() -> {
+                    log.warn("Supplier profile not found for user [{}]", id);
+                    return new ProfileNotFoundException("Supplier profile not found");
+                });
     }
 
     public SupplierProfileDto create(SupplierProfileDto dto) {
         if (dto.id() != null && repository.existsById(dto.id())) {
+            log.warn("Attempt to create duplicate supplier profile for user [{}]", dto.id());
             throw new ProfileAlreadyExistsException("Supplier profile already exists");
         }
-        return persist(dto);
+        SupplierProfileDto saved = persist(dto);
+        log.info("Created supplier profile for user [{}]", saved.id());
+        return saved;
     }
 
     public SupplierProfileDto update(SupplierProfileDto dto) {
         if (!repository.existsById(dto.id())) {
+            log.warn("Attempt to update non-existent supplier profile for user [{}]", dto.id());
             throw new ProfileNotFoundException("Supplier profile not found");
         }
-        return persist(dto);
+        SupplierProfileDto saved = persist(dto);
+        log.info("Updated supplier profile for user [{}]", saved.id());
+        return saved;
     }
 
     public void delete(Long id) {
         if (!repository.existsById(id)) {
+            log.warn("Attempt to delete non-existent supplier profile for user [{}]", id);
             throw new ProfileNotFoundException("Supplier profile not found");
         }
         repository.deleteById(id);
+        log.info("Deleted supplier profile for user [{}]", id);
     }
 
     private SupplierProfileDto persist(SupplierProfileDto dto) {

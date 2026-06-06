@@ -4,6 +4,8 @@ import com.bido.profile.dto.SupplierProfileDto;
 import com.bido.profile.security.AuthContext;
 import com.bido.profile.service.SupplierProfileService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/supplier-profiles")
 public class SupplierProfileController {
+
+    private static final Logger log = LoggerFactory.getLogger(SupplierProfileController.class);
 
     private final SupplierProfileService service;
 
@@ -21,11 +25,13 @@ public class SupplierProfileController {
     @GetMapping
     public ResponseEntity<?> get(AuthContext auth) {
         if (auth.isAdmin()) {
+            log.info("Admin [{}] requested all supplier profiles", auth.userId());
             return ResponseEntity.ok(service.findAll());
         }
         if (!auth.isSupplier()) {
             throw AuthContext.forbidden();
         }
+        log.info("Supplier [{}] requested their profile", auth.userId());
         return ResponseEntity.ok(service.findById(auth.userId()));
     }
 
@@ -33,11 +39,13 @@ public class SupplierProfileController {
     @ResponseStatus(HttpStatus.CREATED)
     public SupplierProfileDto create(@Valid @RequestBody SupplierProfileDto dto, AuthContext auth) {
         if (auth.isAdmin()) {
+            log.info("Admin [{}] creating supplier profile for user [{}]", auth.userId(), dto.id());
             return service.create(dto);
         }
         if (!auth.isSupplier()) {
             throw AuthContext.forbidden();
         }
+        log.info("Supplier [{}] creating their profile", auth.userId());
         SupplierProfileDto ownedDto = new SupplierProfileDto(
             auth.userId(), dto.companyName(), dto.creditBalance(), dto.minOrder(),
             dto.minTimePrepOrder(), dto.avgRating(), dto.acceptsOnlinePayments(),
@@ -50,11 +58,13 @@ public class SupplierProfileController {
     @PutMapping
     public SupplierProfileDto update(@Valid @RequestBody SupplierProfileDto dto, AuthContext auth) {
         if (auth.isAdmin()) {
+            log.info("Admin [{}] updating supplier profile for user [{}]", auth.userId(), dto.id());
             return service.update(dto);
         }
         if (!auth.isSupplier()) {
             throw AuthContext.forbidden();
         }
+        log.info("Supplier [{}] updating their profile", auth.userId());
         SupplierProfileDto ownedDto = new SupplierProfileDto(
             auth.userId(), dto.companyName(), dto.creditBalance(), dto.minOrder(),
             dto.minTimePrepOrder(), dto.avgRating(), dto.acceptsOnlinePayments(),
@@ -70,6 +80,7 @@ public class SupplierProfileController {
         if (!auth.isSupplier()) {
             throw AuthContext.forbidden();
         }
+        log.info("Supplier [{}] deleting their profile", auth.userId());
         service.delete(auth.userId());
     }
 }
