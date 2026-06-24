@@ -1,6 +1,6 @@
 package com.bido.profile.service;
 
-import com.bido.profile.dto.ClientProfileDto;
+import com.bido.profile.dto.CreateClientProfileDto;
 import com.bido.profile.entity.ClientProfile;
 import com.bido.profile.exception.ProfileAlreadyExistsException;
 import com.bido.profile.exception.ProfileNotFoundException;
@@ -24,13 +24,13 @@ public class ClientProfileService {
         this.repository = repository;
     }
 
-    public List<ClientProfileDto> findAll() {
-        List<ClientProfileDto> profiles = repository.findAll().stream().map(this::mapToDto).toList();
+    public List<CreateClientProfileDto> findAll() {
+        List<CreateClientProfileDto> profiles = repository.findAll().stream().map(this::mapToDto).toList();
         log.debug("Fetched {} client profiles", profiles.size());
         return profiles;
     }
 
-    public ClientProfileDto findById(Long id) {
+    public CreateClientProfileDto findById(Long id) {
         return repository.findById(id).map(this::mapToDto)
                 .orElseThrow(() -> {
                     log.warn("Client profile not found for user [{}]", id);
@@ -38,22 +38,22 @@ public class ClientProfileService {
                 });
     }
 
-    public ClientProfileDto create(ClientProfileDto dto) {
+    public CreateClientProfileDto create(CreateClientProfileDto dto) {
         if (dto.id() != null && repository.existsById(dto.id())) {
             log.warn("Attempt to create duplicate client profile for user [{}]", dto.id());
             throw new ProfileAlreadyExistsException("Client profile already exists");
         }
-        ClientProfileDto saved = persist(dto);
+        CreateClientProfileDto saved = persist(dto);
         log.info("Created client profile for user [{}]", saved.id());
         return saved;
     }
 
-    public ClientProfileDto update(ClientProfileDto dto) {
+    public CreateClientProfileDto update(CreateClientProfileDto dto) {
         if (!repository.existsById(dto.id())) {
             log.warn("Attempt to update non-existent client profile for user [{}]", dto.id());
             throw new ProfileNotFoundException("Client profile not found");
         }
-        ClientProfileDto saved = persist(dto);
+        CreateClientProfileDto saved = persist(dto);
         log.info("Updated client profile for user [{}]", saved.id());
         return saved;
     }
@@ -67,29 +67,21 @@ public class ClientProfileService {
         log.info("Deleted client profile for user [{}]", id);
     }
 
-    private ClientProfileDto persist(ClientProfileDto dto) {
+    private CreateClientProfileDto persist(CreateClientProfileDto dto) {
         ClientProfile entity = repository.findById(dto.id() != null ? dto.id() : -1L).orElse(new ClientProfile());
 
         entity.setId(dto.id());
         entity.setFirstName(dto.firstName());
         entity.setLastName(dto.lastName());
-        entity.setPhoneNumber(dto.phoneNumber());
-        entity.setCompanyName(dto.companyName());
-        entity.setCui(dto.cui());
-        entity.setBillingAddress(dto.billingAddress());
 
         return mapToDto(repository.save(entity));
     }
 
-    private ClientProfileDto mapToDto(ClientProfile entity) {
-        return new ClientProfileDto(
+    private CreateClientProfileDto mapToDto(ClientProfile entity) {
+        return new CreateClientProfileDto(
             entity.getId(),
             entity.getFirstName(),
-            entity.getLastName(),
-            entity.getPhoneNumber(),
-            entity.getCompanyName(),
-            entity.getCui(),
-            entity.getBillingAddress()
+            entity.getLastName()
         );
     }
 }

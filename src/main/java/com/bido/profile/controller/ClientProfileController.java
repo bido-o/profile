@@ -1,6 +1,6 @@
 package com.bido.profile.controller;
 
-import com.bido.profile.dto.ClientProfileDto;
+import com.bido.profile.dto.CreateClientProfileDto;
 import com.bido.profile.security.AuthContext;
 import com.bido.profile.service.ClientProfileService;
 import jakarta.validation.Valid;
@@ -37,7 +37,7 @@ public class ClientProfileController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ClientProfileDto create(@Valid @RequestBody ClientProfileDto dto, AuthContext auth) {
+    public CreateClientProfileDto create(@Valid @RequestBody CreateClientProfileDto dto, AuthContext auth) {
         if (auth.isAdmin()) {
             log.info("Admin [{}] creating client profile for user [{}]", auth.userId(), dto.id());
             return service.create(dto);
@@ -46,15 +46,12 @@ public class ClientProfileController {
             throw AuthContext.forbidden();
         }
         log.info("Client [{}] creating their profile", auth.userId());
-        ClientProfileDto ownedDto = new ClientProfileDto(
-            auth.userId(), dto.firstName(), dto.lastName(), dto.phoneNumber(),
-            dto.companyName(), dto.cui(), dto.billingAddress()
-        );
+        CreateClientProfileDto ownedDto = new CreateClientProfileDto(auth.userId(), dto.firstName(), dto.lastName());
         return service.create(ownedDto);
     }
 
     @PutMapping
-    public ClientProfileDto update(@Valid @RequestBody ClientProfileDto dto, AuthContext auth) {
+    public CreateClientProfileDto update(@Valid @RequestBody CreateClientProfileDto dto, AuthContext auth) {
         if (auth.isAdmin()) {
             log.info("Admin [{}] updating client profile for user [{}]", auth.userId(), dto.id());
             return service.update(dto);
@@ -63,10 +60,7 @@ public class ClientProfileController {
             throw AuthContext.forbidden();
         }
         log.info("Client [{}] updating their profile", auth.userId());
-        ClientProfileDto ownedDto = new ClientProfileDto(
-            auth.userId(), dto.firstName(), dto.lastName(), dto.phoneNumber(),
-            dto.companyName(), dto.cui(), dto.billingAddress()
-        );
+        CreateClientProfileDto ownedDto = new CreateClientProfileDto(auth.userId(), dto.firstName(), dto.lastName());
         return service.update(ownedDto);
     }
 

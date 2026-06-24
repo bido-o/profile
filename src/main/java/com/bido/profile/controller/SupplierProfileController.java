@@ -1,6 +1,6 @@
 package com.bido.profile.controller;
 
-import com.bido.profile.dto.SupplierProfileDto;
+import com.bido.profile.dto.CreateSupplierProfileDto;
 import com.bido.profile.security.AuthContext;
 import com.bido.profile.service.SupplierProfileService;
 import jakarta.validation.Valid;
@@ -37,7 +37,7 @@ public class SupplierProfileController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public SupplierProfileDto create(@Valid @RequestBody SupplierProfileDto dto, AuthContext auth) {
+    public CreateSupplierProfileDto create(@Valid @RequestBody CreateSupplierProfileDto dto, AuthContext auth) {
         if (auth.isAdmin()) {
             log.info("Admin [{}] creating supplier profile for user [{}]", auth.userId(), dto.id());
             return service.create(dto);
@@ -46,17 +46,12 @@ public class SupplierProfileController {
             throw AuthContext.forbidden();
         }
         log.info("Supplier [{}] creating their profile", auth.userId());
-        SupplierProfileDto ownedDto = new SupplierProfileDto(
-            auth.userId(), dto.companyName(), dto.creditBalance(), dto.minOrder(),
-            dto.minTimePrepOrder(), dto.avgRating(), dto.acceptsOnlinePayments(),
-            dto.hasLegalInfo(), dto.totalOffersWon(), dto.totalDisputesLost(),
-            dto.totalOffersSubmitted()
-        );
+        CreateSupplierProfileDto ownedDto = new CreateSupplierProfileDto(auth.userId(), dto.companyName());
         return service.create(ownedDto);
     }
 
     @PutMapping
-    public SupplierProfileDto update(@Valid @RequestBody SupplierProfileDto dto, AuthContext auth) {
+    public CreateSupplierProfileDto update(@Valid @RequestBody CreateSupplierProfileDto dto, AuthContext auth) {
         if (auth.isAdmin()) {
             log.info("Admin [{}] updating supplier profile for user [{}]", auth.userId(), dto.id());
             return service.update(dto);
@@ -65,12 +60,7 @@ public class SupplierProfileController {
             throw AuthContext.forbidden();
         }
         log.info("Supplier [{}] updating their profile", auth.userId());
-        SupplierProfileDto ownedDto = new SupplierProfileDto(
-            auth.userId(), dto.companyName(), dto.creditBalance(), dto.minOrder(),
-            dto.minTimePrepOrder(), dto.avgRating(), dto.acceptsOnlinePayments(),
-            dto.hasLegalInfo(), dto.totalOffersWon(), dto.totalDisputesLost(),
-            dto.totalOffersSubmitted()
-        );
+        CreateSupplierProfileDto ownedDto = new CreateSupplierProfileDto(auth.userId(), dto.companyName());
         return service.update(ownedDto);
     }
 
